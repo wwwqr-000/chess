@@ -9,8 +9,11 @@
 #include <tchar.h>
 #include <windows.h>
 #include <iostream>
+#include <cstdlib>
 #include <vector>
 #include <thread>
+
+#include "classes/dimensions.hpp"
 
 LRESULT CALLBACK winProc(HWND, UINT, WPARAM, LPARAM);
 TCHAR szClassName[] = _T("wwwqrAppChess");
@@ -41,6 +44,10 @@ void threadSetup() {
     threads.emplace_back([]{ tick(); });
 }
 
+int randInt(int min_num, int max_num) {
+    return min_num + (rand() % max_num);
+}
+
 void drawScreen(HDC &hdcMem, int width, int height) {
     BITMAPINFO bmi;
     ZeroMemory(&bmi, sizeof(BITMAPINFO));
@@ -54,7 +61,7 @@ void drawScreen(HDC &hdcMem, int width, int height) {
 
     for (int x = 0; x < width; x++) {
         for (int y = 0; y < height; y++) {
-            pixels[y * width + x] = RGB(255, 255, 255);
+            pixels[y * width + x] = RGB(randInt(1, 255), randInt(1, 255), randInt(1, 255));
         }
     }
 
@@ -81,6 +88,7 @@ int WINAPI WinMain(HINSTANCE hThisInstance, HINSTANCE hPrevInstance, LPSTR lpszA
     if (!RegisterClassEx(&wincl)) { return 0; }
     hwnd = CreateWindowEx(0, szClassName, _T("Chess"), WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 1920 / 2, 1080 / 2, HWND_DESKTOP, NULL, hThisInstance, NULL);
     //Initialize area external functions
+    std::srand((unsigned) time(NULL));//Set random seed
     threadSetup();
     //
     ShowWindow(hwnd, nCmdShow);
