@@ -14,6 +14,7 @@
 #include <thread>
 
 #include "classes/dimensions.hpp"
+#include "classes/particle.hpp"
 
 LRESULT CALLBACK winProc(HWND, UINT, WPARAM, LPARAM);
 TCHAR szClassName[] = _T("wwwqrAppChess");
@@ -21,6 +22,7 @@ TCHAR szClassName[] = _T("wwwqrAppChess");
 HWND hwnd;
 bool active = true;
 std::vector<std::thread> threads;
+std::vector<particle> particles;
 int tickTime;
 
 void free() {
@@ -44,6 +46,10 @@ void threadSetup() {
     threads.emplace_back([]{ tick(); });
 }
 
+void createParticleTest() {
+    particles.emplace_back(particle(point2(100, 20), point3(255, 255, 255), 5, 40, 1, point2(1, 1)));
+}
+
 int randInt(int min_num, int max_num) {
     return min_num + (rand() % max_num);
 }
@@ -61,7 +67,34 @@ void drawScreen(HDC &hdcMem, int width, int height) {
 
     for (int x = 0; x < width; x++) {
         for (int y = 0; y < height; y++) {
-            pixels[y * width + x] = RGB(randInt(1, 255), randInt(1, 255), randInt(1, 255));
+            pixels[y * width + x] = RGB(0, 0, 0);
+        }
+    }
+
+    for (auto& partcl : particles) {
+        if (tickTime % partcl.getDirChangeTime() == 0) {
+            partcl.getDirection() = randInt(0, 3);
+            std::cout << "ChangeDir : " << partcl.getDirection() << "\n";
+        }
+
+        if (tickTime % partcl.getDirExecTime() == 0) {
+            int dir = partcl.getDirection();
+            switch (dir) {
+                case 0:
+                    partcl.getPos().x_i--;
+                break;
+                case 1:
+                    partcl.getPos().x_i++;
+                break;
+            }
+        }
+
+        partcl.getPos().y_i++;
+        for (int x = partcl.getPos().x_i; x < partcl.getPos().x_i + partcl.getBox().x_i; x++) {
+            for (int y = partcl.getPos().y_i; y < partcl.getPos().y_i + partcl.getBox().y_i; y++) {
+                point3 rgb = partcl.getRGB();
+                pixels[y * width + x] = RGB(rgb.x_i, rgb.y_i, rgb.z_i);
+            }
         }
     }
 
@@ -89,6 +122,7 @@ int WINAPI WinMain(HINSTANCE hThisInstance, HINSTANCE hPrevInstance, LPSTR lpszA
     hwnd = CreateWindowEx(0, szClassName, _T("Chess"), WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 1920 / 2, 1080 / 2, HWND_DESKTOP, NULL, hThisInstance, NULL);
     //Initialize area external functions
     std::srand((unsigned) time(NULL));//Set random seed
+    createParticleTest();
     threadSetup();
     //
     ShowWindow(hwnd, nCmdShow);

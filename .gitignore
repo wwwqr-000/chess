@@ -3,3 +3,4 @@ chess.cbp
 bin/Debug/chess.exe
 chess.depend
 obj/Debug/main.o
+chess.layout
