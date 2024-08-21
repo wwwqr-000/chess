@@ -4,6 +4,8 @@
     #define UNICODE
 #endif
 
+//Use -luser32 and -lgdi32
+
 #include <tchar.h>
 #include <windows.h>
 #include <iostream>
