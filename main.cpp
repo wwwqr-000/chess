@@ -42,16 +42,18 @@ void tick() {
     }
 }
 
+int randInt(int min_num, int max_num) {
+    return min_num + (rand() % max_num);
+}
+
 void threadSetup() {
     threads.emplace_back([]{ tick(); });
 }
 
 void createParticleTest() {
-    particles.emplace_back(particle(point2(100, 20), point3(255, 255, 255), 5, 40, 1, point2(1, 1)));
-}
-
-int randInt(int min_num, int max_num) {
-    return min_num + (rand() % max_num);
+    for (int i = 0; i < 10; i++) {
+        particles.emplace_back(particle(point2(randInt(0, 1920 / 2), randInt(0, 5)), point3(255, 255, 255), 5, 40, 1, 1, point2(1, 1)));
+    }
 }
 
 void drawScreen(HDC &hdcMem, int width, int height) {
@@ -65,6 +67,10 @@ void drawScreen(HDC &hdcMem, int width, int height) {
     bmi.bmiHeader.biCompression = BI_RGB;
     std::vector<COLORREF> pixels(width * height);
 
+    if (tickTime % 10 == 0) {
+        createParticleTest();
+    }
+
     for (int x = 0; x < width; x++) {
         for (int y = 0; y < height; y++) {
             pixels[y * width + x] = RGB(0, 0, 0);
@@ -72,12 +78,15 @@ void drawScreen(HDC &hdcMem, int width, int height) {
     }
 
     for (auto& partcl : particles) {
-        if (tickTime % partcl.getDirChangeTime() == 0) {
+        bool fallen = partcl.getFallen();
+        if (tickTime % partcl.getDirExecTime() > 10 && !fallen) {
+            partcl.getDirExecTime() = randInt(0, 100);
+        }
+        if (tickTime % partcl.getDirChangeTime() == 0 && !fallen) {
             partcl.getDirection() = randInt(0, 3);
-            std::cout << "ChangeDir : " << partcl.getDirection() << "\n";
         }
 
-        if (tickTime % partcl.getDirExecTime() == 0) {
+        if (tickTime % partcl.getDirExecTime() == 0 && !fallen) {
             int dir = partcl.getDirection();
             switch (dir) {
                 case 0:
@@ -89,7 +98,12 @@ void drawScreen(HDC &hdcMem, int width, int height) {
             }
         }
 
-        partcl.getPos().y_i++;
+        if (partcl.getPos().y_i >= 500) {
+            partcl.getFallen() = true;
+        }
+        else {
+            partcl.getPos().y_i++;
+        }
         for (int x = partcl.getPos().x_i; x < partcl.getPos().x_i + partcl.getBox().x_i; x++) {
             for (int y = partcl.getPos().y_i; y < partcl.getPos().y_i + partcl.getBox().y_i; y++) {
                 point3 rgb = partcl.getRGB();
