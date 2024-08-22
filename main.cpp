@@ -104,9 +104,17 @@ void drawScreen(HDC &hdcMem, int width, int height) {
         else {
             partcl.getPos().y_i++;
         }
+
         for (int x = partcl.getPos().x_i; x < partcl.getPos().x_i + partcl.getBox().x_i; x++) {
             for (int y = partcl.getPos().y_i; y < partcl.getPos().y_i + partcl.getBox().y_i; y++) {
                 point3 rgb = partcl.getRGB();
+                if (y < 1080 / 2) {
+                    COLORREF pxColor = pixels[y * width + x];
+                    if (GetRValue(pxColor) == 255) {
+                        partcl.getPos().y_i -= 2;
+                        partcl.getFallen() = true;
+                    }
+                }
                 pixels[y * width + x] = RGB(rgb.x_i, rgb.y_i, rgb.z_i);
             }
         }
