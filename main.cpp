@@ -51,7 +51,7 @@ void threadSetup() {
 }
 
 void createParticleTest() {
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 15; i++) {
         particles.emplace_back(particle(point2(randInt(0, 1920 / 2), randInt(0, 5)), point3(255, 255, 255), 5, 40, 1, 1, point2(1, 1)));
     }
 }
@@ -67,7 +67,7 @@ void drawScreen(HDC &hdcMem, int width, int height) {
     bmi.bmiHeader.biCompression = BI_RGB;
     std::vector<COLORREF> pixels(width * height);
 
-    if (tickTime % 10 == 0) {
+    if (tickTime % 5 == 0) {
         createParticleTest();
     }
 
